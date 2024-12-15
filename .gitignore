@@ -1,0 +1,15 @@
+# Gradle
+.gradle
+build
+
+# IntelliJ IDEA
+.idea
+*.iml
+out
+
+# Kotlin
+.kotlin
+
+# macOS
+.DS_Store
+
