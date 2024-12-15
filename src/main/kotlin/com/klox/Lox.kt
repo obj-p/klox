@@ -6,18 +6,38 @@ import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.Scanner
+import kotlin.system.exitProcess
 
-object Lox {
-    private const val USAGE = "Usage: klox [script]"
+class Lox {
+    private var hadError = false
 
-    @JvmStatic fun main(args: Array<String>) {
-        if (args.size > 1) {
-            println(USAGE)
-        } else if (args.size == 1) {
-            runFile(args.first())
-        } else {
-            runPrompt()
+    private fun error(line: Int, message: String) {
+        report(line, "", message)
+    }
+
+    companion object {
+        private const val EX_DATAERR = 65
+        private const val EX_USAGE = 64
+        private const val USAGE = "Usage: klox [script]"
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val lox = Lox()
+
+            if (args.size > 1) {
+                println(USAGE)
+                exitProcess(EX_USAGE)
+            } else if (args.size == 1) {
+                lox.runFile(args.first())
+            } else {
+                lox.runPrompt()
+            }
         }
+    }
+
+    private fun report(line: Int, where: String, message: String) {
+        System.err.println("[line $line] Error$where: $message")
+        hadError = true
     }
 
     private fun run(source: String) {
@@ -33,6 +53,8 @@ object Lox {
         val bytes = Files.readAllBytes(Paths.get(path))
 
         run(String(bytes, Charset.defaultCharset()))
+
+        if (hadError) exitProcess(EX_DATAERR)
     }
 
     private fun runPrompt() {
@@ -44,6 +66,7 @@ object Lox {
             val line = reader.readLine()
 
             line?.let(::run)
+            hadError = false
         }
     }
 }
